@@ -25,7 +25,7 @@ namespace RotationShiz
         {
             InitializeComponent();
             timer.Enabled = true;
-            timer.Interval = 50;  /* 100 millisec */
+            timer.Interval = 20;  /* 100 millisec */
             timer.Tick += new EventHandler(TimerCallback);
         }
         private void TimerCallback(object sender, EventArgs e)
@@ -90,35 +90,19 @@ namespace RotationShiz
             this.Invalidate();
             return;
         }
-        public double[] xpointsp = new double[xpoints.Length];
-        public double[] ypointsp = new double[xpoints.Length];
-        public double[] zpointsp = new double[xpoints.Length];
+        public double[,] pointsp = new double[points.Length/3,3];
 
-        static double[] xpoints = new double[]
+        static double[,] points = new double[,]
         {
-            -1,     1,
-            1,      -1,
+            {   -1,     1,      1       },
+            {   1,      1,      1       },
+            {   1,      -1,     1       },
+            {   -1,     -1,     1       },
 
-            -1,     1,
-            1,      -1
-        };
-
-        static double[] ypoints = new double[]
-        {
-            1,      1,
-            -1,     -1,
-
-            1,      1,
-            -1,     -1
-        };
-
-        static double[] zpoints = new double[]
-        {
-            1,      1,
-            1,      1,
-
-            -1,     -1,
-            -1,     -1
+            {   -1,     1,      -1      },
+            {    1,     1,      -1      },
+            {    1,     -1,     -1      },
+            {   -1,     -1,     -1      }
         };
 
         static int[,] vertInd = new int[,]
@@ -144,50 +128,49 @@ namespace RotationShiz
         };
 
 
-        private void Form1_Paint(object sender, EventArgs e)
+        private void Form1_Paint(object sender, PaintEventArgs e)
         {
 
-            for (int i = 0; i < xpoints.Length; i++)
+            for (int i = 0; i < points.Length / 3; i++)
             {
-                xpointsp[i] = xpoints[i];
-                ypointsp[i] = ypoints[i];
-                zpointsp[i] = zpoints[i];
+                pointsp[i,0] = points[i,0];
+                pointsp[i,1] = points[i,1];
+                pointsp[i,2] = points[i,2];
             }
-            for (int i = 0; i < xpoints.Length; i++)
+            for (int i = 0; i < points.Length / 3; i++)
             {
-                double dy = ypointsp[i];
-                double dz = zpointsp[i];
-                ypointsp[i] = (dy * Math.Cos(rotx)) - (dz * Math.Sin(rotx));
-                zpointsp[i] = (dy * Math.Sin(rotx)) + (dz * Math.Cos(rotx));
+                double dy = pointsp[i,1];
+                double dz = pointsp[i,2];
+                pointsp[i,1] = (dy * Math.Cos(rotx)) - (dz * Math.Sin(rotx));
+                pointsp[i,2] = (dy * Math.Sin(rotx)) + (dz * Math.Cos(rotx));
             }
-            for (int i = 0; i < xpoints.Length; i++)
+            for (int i = 0; i < points.Length / 3; i++)
             {
-                double dx = xpointsp[i];
-                double dz = zpointsp[i];
-                zpointsp[i] = (dz * Math.Cos(roty)) - (dx * Math.Sin(roty));
-                xpointsp[i] = (dz * Math.Sin(roty)) + (dx * Math.Cos(roty));
+                double dx = pointsp[i,0];
+                double dz = pointsp[i,2];
+                pointsp[i,2] = (dz * Math.Cos(roty)) - (dx * Math.Sin(roty));
+                pointsp[i,0] = (dz * Math.Sin(roty)) + (dx * Math.Cos(roty));
             }
-            for (int i = 0; i < xpoints.Length; i++)
+            for (int i = 0; i < points.Length / 3; i++)
             {
-                double dx = xpointsp[i];
-                double dy = ypointsp[i];
-                xpointsp[i] = (dx * Math.Cos(rotz)) - (dy * Math.Sin(rotz));
-                ypointsp[i] = (dx * Math.Sin(rotz)) + (dy * Math.Cos(rotz));
+                double dx = pointsp[i,0];
+                double dy = pointsp[i,1];
+                pointsp[i,0] = (dx * Math.Cos(rotz)) - (dy * Math.Sin(rotz));
+                pointsp[i,1] = (dx * Math.Sin(rotz)) + (dy * Math.Cos(rotz));
             }
 
             Brush bBrush = (Brush)Brushes.Black;
             Brush wBrush = (Brush)Brushes.White;
             Pen wPen = (Pen)Pens.White;
-            Graphics g = this.CreateGraphics();
-            g.FillRectangle(bBrush, 0, 0, this.Width, this.Height);
+            e.Graphics.FillRectangle(bBrush, 0, 0, this.Width, this.Height);
             int size = Math.Min(this.Width, this.Height);
             for (int i = 0; i < vertInd.Length/2; i++)
             {
-                int x1 = Convert.ToInt32(((xpointsp[vertInd[i, 0]] + offx) * (2 / (zpointsp[vertInd[i, 0]] + offz))) * size / 4) + this.Width / 2;
-                int y1 = Convert.ToInt32(((ypointsp[vertInd[i, 0]] + offy) * (2 / (zpointsp[vertInd[i, 0]] + offz))) * size / 4) + this.Height / 2;
-                int x2 = Convert.ToInt32(((xpointsp[vertInd[i, 1]] + offx) * (2 / (zpointsp[vertInd[i, 1]] + offz))) * size / 4) + this.Width / 2;
-                int y2 = Convert.ToInt32(((ypointsp[vertInd[i, 1]] + offy) * (2 / (zpointsp[vertInd[i, 1]] + offz))) * size / 4) + this.Height / 2;
-                g.DrawLine(wPen, x1, y1, x2, y2);
+                int x1 = Convert.ToInt32(((pointsp[vertInd[i, 0],0] + offx) * (2 / (pointsp[vertInd[i, 0],2] + offz))) * size / 4) + this.Width / 2;
+                int y1 = Convert.ToInt32(((pointsp[vertInd[i, 0],1] + offy) * (2 / (pointsp[vertInd[i, 0],2] + offz))) * size / 4) + this.Height / 2;
+                int x2 = Convert.ToInt32(((pointsp[vertInd[i, 1],0] + offx) * (2 / (pointsp[vertInd[i, 1],2] + offz))) * size / 4) + this.Width / 2;
+                int y2 = Convert.ToInt32(((pointsp[vertInd[i, 1],1] + offy) * (2 / (pointsp[vertInd[i, 1],2] + offz))) * size / 4) + this.Height / 2;
+                e.Graphics.DrawLine(wPen, x1, y1, x2, y2);
             }
         }
     }
