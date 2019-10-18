@@ -21,6 +21,8 @@ namespace RotationShiz
         double offx = 0;
         double offy = 0;
         double offz = 4;
+
+        double fov = Math.PI / 8;
         public Form1()
         {
             InitializeComponent();
@@ -84,6 +86,28 @@ namespace RotationShiz
                 else if (Keyboard.IsKeyDown(Key.Up))
                 {
                     offy -= 0.12;
+                }
+
+                if (Keyboard.IsKeyDown(Key.OemPlus) && fov < Math.PI/3)
+                {
+                    fov += 0.01;
+                }
+                else if (Keyboard.IsKeyDown(Key.OemMinus) && fov > Math.PI/16)
+                {
+                    fov -= 0.01;
+                }
+
+                if (Keyboard.IsKeyDown(Key.P))
+                {
+                    rotx = 0;
+                    roty = 0;
+                    rotz = 0;
+
+                    offx = 0;
+                    offy = 0;
+                    offz = 4;
+
+                    fov = Math.PI / 8;
                 }
 
             }
@@ -164,13 +188,32 @@ namespace RotationShiz
             Pen wPen = (Pen)Pens.White;
             e.Graphics.FillRectangle(bBrush, 0, 0, this.Width, this.Height);
             int size = Math.Min(this.Width, this.Height);
+            Font font = new Font(FontFamily.GenericMonospace, size / 40);
+            e.Graphics.DrawString(  "FOV: " + Convert.ToInt32(fov * 180) +
+                                    "\nRotX: " + Mod(Convert.ToInt32(rotx * 180), 360) +
+                                    "\nRotY: " + Mod(Convert.ToInt32(roty * 180), 360) +
+                                    "\nRotZ: " + Mod(Convert.ToInt32(rotz * 180), 360) +
+                                    "\nX: " + offx.ToString("f2") +
+                                    "\nY: " + offy.ToString("f2") +
+                                    "\nZ: " + offz.ToString("f2"), font, wBrush, 0, 0);
             for (int i = 0; i < vertInd.Length/2; i++)
             {
-                int x1 = Convert.ToInt32(((pointsp[vertInd[i, 0],0] + offx) * (2 / (pointsp[vertInd[i, 0],2] + offz))) * size / 4) + this.Width / 2;
-                int y1 = Convert.ToInt32(((pointsp[vertInd[i, 0],1] + offy) * (2 / (pointsp[vertInd[i, 0],2] + offz))) * size / 4) + this.Height / 2;
-                int x2 = Convert.ToInt32(((pointsp[vertInd[i, 1],0] + offx) * (2 / (pointsp[vertInd[i, 1],2] + offz))) * size / 4) + this.Width / 2;
-                int y2 = Convert.ToInt32(((pointsp[vertInd[i, 1],1] + offy) * (2 / (pointsp[vertInd[i, 1],2] + offz))) * size / 4) + this.Height / 2;
+                double tempfov = 1 / Math.Tan(fov);
+                int x1 = Convert.ToInt32(((pointsp[vertInd[i, 0],0] + offx) * (tempfov / (pointsp[vertInd[i, 0],2] + offz))) * size / 4) + this.Width / 2;
+                int y1 = Convert.ToInt32(((pointsp[vertInd[i, 0],1] + offy) * (tempfov / (pointsp[vertInd[i, 0],2] + offz))) * size / 4) + this.Height / 2;
+                int x2 = Convert.ToInt32(((pointsp[vertInd[i, 1],0] + offx) * (tempfov / (pointsp[vertInd[i, 1],2] + offz))) * size / 4) + this.Width / 2;
+                int y2 = Convert.ToInt32(((pointsp[vertInd[i, 1],1] + offy) * (tempfov / (pointsp[vertInd[i, 1],2] + offz))) * size / 4) + this.Height / 2;
                 e.Graphics.DrawLine(wPen, x1, y1, x2, y2);
+            }
+
+            int Mod(int a, int n)
+            {
+                int result = a % n;
+                if ((result < 0 && n > 0) || (result > 0 && n < 0))
+                {
+                    result += n;
+                }
+                return result;
             }
         }
     }
