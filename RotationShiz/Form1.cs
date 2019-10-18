@@ -180,12 +180,13 @@ namespace RotationShiz
             Pen wPen = (Pen)Pens.White;
             Graphics g = this.CreateGraphics();
             g.FillRectangle(bBrush, 0, 0, this.Width, this.Height);
+            int size = Math.Min(this.Width, this.Height);
             for (int i = 0; i < vertInd.Length/2; i++)
             {
-                int x1 = Convert.ToInt32(((xpointsp[vertInd[i, 0]] + offx) * (2 / (zpointsp[vertInd[i, 0]] + offz))) * this.Width / 4) + this.Width / 2;
-                int y1 = Convert.ToInt32(((ypointsp[vertInd[i, 0]] + offy) * (2 / (zpointsp[vertInd[i, 0]] + offz))) * this.Width / 4) + this.Height / 2;
-                int x2 = Convert.ToInt32(((xpointsp[vertInd[i, 1]] + offx) * (2 / (zpointsp[vertInd[i, 1]] + offz))) * this.Width / 4) + this.Width / 2;
-                int y2 = Convert.ToInt32(((ypointsp[vertInd[i, 1]] + offy) * (2 / (zpointsp[vertInd[i, 1]] + offz))) * this.Width / 4) + this.Height / 2;
+                int x1 = Convert.ToInt32(((xpointsp[vertInd[i, 0]] + offx) * (2 / (zpointsp[vertInd[i, 0]] + offz))) * size / 4) + this.Width / 2;
+                int y1 = Convert.ToInt32(((ypointsp[vertInd[i, 0]] + offy) * (2 / (zpointsp[vertInd[i, 0]] + offz))) * size / 4) + this.Height / 2;
+                int x2 = Convert.ToInt32(((xpointsp[vertInd[i, 1]] + offx) * (2 / (zpointsp[vertInd[i, 1]] + offz))) * size / 4) + this.Width / 2;
+                int y2 = Convert.ToInt32(((ypointsp[vertInd[i, 1]] + offy) * (2 / (zpointsp[vertInd[i, 1]] + offz))) * size / 4) + this.Height / 2;
                 g.DrawLine(wPen, x1, y1, x2, y2);
             }
         }
