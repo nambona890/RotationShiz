@@ -65,7 +65,7 @@ namespace RotationShiz
                 {
                     offz += 0.12;
                 }
-                else if (Keyboard.IsKeyDown(Key.F))
+                else if (Keyboard.IsKeyDown(Key.F)&&offz>1.5)
                 {
                     offz -= 0.12;
                 }
