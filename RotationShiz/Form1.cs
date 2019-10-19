@@ -23,9 +23,58 @@ namespace RotationShiz
         double offz = 4;
 
         double fov = Math.PI / 8;
+        public double[][] vertices;
+        public int[][] tris;
         public Form1()
         {
             InitializeComponent();
+            List<List<double>> impVer = new List<List<double>>();
+            List<List<int>> impTris = new List<List<int>>();
+
+
+        byte[] rawData = Properties.Resources.mesh;
+            string strData = Encoding.UTF8.GetString(rawData, 0, rawData.Length);
+            
+
+            string[] words = strData.Split('\n');
+
+            foreach (string lines in words)
+            {
+                List<double> tmpVer = new List<double>();
+                List<int> tmpInd = new List<int>();
+
+                string[] values = lines.Split(' ');
+                
+                switch (values[0])
+                {
+                    case "v":
+                        double tmpDb1;
+                        Double.TryParse(values[1], out tmpDb1);
+                        tmpVer.Add(tmpDb1);
+                        Double.TryParse(values[2], out tmpDb1);
+                        tmpVer.Add(tmpDb1);
+                        Double.TryParse(values[3], out tmpDb1);
+                        tmpVer.Add(tmpDb1);
+
+                        impVer.Add(tmpVer);
+
+                        break;
+                    case "f":
+                        int tmpDb2;
+                        Int32.TryParse(values[1], out tmpDb2);
+                        tmpInd.Add(tmpDb2);
+                        Int32.TryParse(values[2], out tmpDb2);
+                        tmpInd.Add(tmpDb2);
+                        Int32.TryParse(values[3], out tmpDb2);
+                        tmpInd.Add(tmpDb2);
+
+                        impTris.Add(tmpInd);
+                        break;
+                }
+            }
+            vertices = impVer.Select(list => list.ToArray()).ToArray();
+            tris = impTris.Select(list => list.ToArray()).ToArray();
+
             timer.Enabled = true;
             timer.Interval = 20;  /* 100 millisec */
             timer.Tick += new EventHandler(TimerCallback);
@@ -79,11 +128,11 @@ namespace RotationShiz
                     offx -= 0.12;
                 }
 
-                if (Keyboard.IsKeyDown(Key.Down))
+                if (Keyboard.IsKeyDown(Key.Up))
                 {
                     offy += 0.12;
                 }
-                else if (Keyboard.IsKeyDown(Key.Up))
+                else if (Keyboard.IsKeyDown(Key.Down))
                 {
                     offy -= 0.12;
                 }
@@ -114,73 +163,76 @@ namespace RotationShiz
             this.Invalidate();
             return;
         }
-        public double[,] pointsp = new double[points.Length/3,3];
 
-        static double[,] points = new double[,]
-        {
-            {   -1,     1,      1       },
-            {   1,      1,      1       },
-            {   1,      -1,     1       },
-            {   -1,     -1,     1       },
+        //static double[,] points = new double[,]
+        //{
+        //    {   -1,     1,      1       },
+        //    {   1,      1,      1       },
+        //    {   1,      -1,     1       },
+        //    {   -1,     -1,     1       },
 
-            {   -1,     1,      -1      },
-            {    1,     1,      -1      },
-            {    1,     -1,     -1      },
-            {   -1,     -1,     -1      }
-        };
+        //    {   -1,     1,      -1      },
+        //    {    1,     1,      -1      },
+        //    {    1,     -1,     -1      },
+        //    {   -1,     -1,     -1      }
+        //};
 
-        static int[,] vertInd = new int[,]
-        {
-            {0,1},
-            {1,2},
-            {2,3},
-            {3,0},
+        //static int[,] vertInd = new int[,]
+        //{
+        //    {0,1},
+        //    {1,2},
+        //    {2,3},
+        //    {3,0},
 
-            {4,0},
-            {3,7},
+        //    {4,0},
+        //    {3,7},
 
-            {4,5},
-            {5,6},
-            {6,7},
-            {7,4},
+        //    {4,5},
+        //    {5,6},
+        //    {6,7},
+        //    {7,4},
 
-            {1,5},
-            {2,6}
-
+        //    {1,5},
+        //    {2,6}
 
 
-        };
+
+        //};
 
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-
-            for (int i = 0; i < points.Length / 3; i++)
+            double[][] vertsP = new double[vertices.GetLength(0)][];
+            for(int i=0;i<vertsP.Length;++i)
             {
-                pointsp[i,0] = points[i,0];
-                pointsp[i,1] = points[i,1];
-                pointsp[i,2] = points[i,2];
+                vertsP[i] = new double[3];
             }
-            for (int i = 0; i < points.Length / 3; i++)
+            for (int i = 0; i < vertices.GetLength(0); i++)
             {
-                double dy = pointsp[i,1];
-                double dz = pointsp[i,2];
-                pointsp[i,1] = (dy * Math.Cos(rotx)) - (dz * Math.Sin(rotx));
-                pointsp[i,2] = (dy * Math.Sin(rotx)) + (dz * Math.Cos(rotx));
+                vertsP[i][0] = vertices[i][0];
+                vertsP[i][1] = vertices[i][1];
+                vertsP[i][2] = vertices[i][2];
             }
-            for (int i = 0; i < points.Length / 3; i++)
+            for (int i = 0; i < vertices.GetLength(0); i++)
             {
-                double dx = pointsp[i,0];
-                double dz = pointsp[i,2];
-                pointsp[i,2] = (dz * Math.Cos(roty)) - (dx * Math.Sin(roty));
-                pointsp[i,0] = (dz * Math.Sin(roty)) + (dx * Math.Cos(roty));
+                double dy = vertsP[i][1];
+                double dz = vertsP[i][2];
+                vertsP[i][1] = (dy * Math.Cos(rotx)) - (dz * Math.Sin(rotx));
+                vertsP[i][2] = (dy * Math.Sin(rotx)) + (dz * Math.Cos(rotx));
             }
-            for (int i = 0; i < points.Length / 3; i++)
+            for (int i = 0; i < vertices.GetLength(0); i++)
             {
-                double dx = pointsp[i,0];
-                double dy = pointsp[i,1];
-                pointsp[i,0] = (dx * Math.Cos(rotz)) - (dy * Math.Sin(rotz));
-                pointsp[i,1] = (dx * Math.Sin(rotz)) + (dy * Math.Cos(rotz));
+                double dx = vertsP[i][0];
+                double dz = vertsP[i][2];
+                vertsP[i][2] = (dz * Math.Cos(roty)) - (dx * Math.Sin(roty));
+                vertsP[i][0] = (dz * Math.Sin(roty)) + (dx * Math.Cos(roty));
+            }
+            for (int i = 0; i < vertices.GetLength(0); i++)
+            {
+                double dx = vertsP[i][0];
+                double dy = vertsP[i][1];
+                vertsP[i][0] = (dx * Math.Cos(rotz)) - (dy * Math.Sin(rotz));
+                vertsP[i][1] = (dx * Math.Sin(rotz)) + (dy * Math.Cos(rotz));
             }
 
             Brush bBrush = (Brush)Brushes.Black;
@@ -196,14 +248,16 @@ namespace RotationShiz
                                     "\nX: " + offx.ToString("f2") +
                                     "\nY: " + offy.ToString("f2") +
                                     "\nZ: " + offz.ToString("f2"), font, wBrush, 0, 0);
-            for (int i = 0; i < vertInd.Length/2; i++)
+            for (int i = 0; i < tris.GetLength(0); i++)
             {
                 double tempfov = 1 / Math.Tan(fov);
-                int x1 = Convert.ToInt32(((pointsp[vertInd[i, 0],0] + offx) * (tempfov / (pointsp[vertInd[i, 0],2] + offz))) * size / 4) + this.Width / 2;
-                int y1 = Convert.ToInt32(((pointsp[vertInd[i, 0],1] + offy) * (tempfov / (pointsp[vertInd[i, 0],2] + offz))) * size / 4) + this.Height / 2;
-                int x2 = Convert.ToInt32(((pointsp[vertInd[i, 1],0] + offx) * (tempfov / (pointsp[vertInd[i, 1],2] + offz))) * size / 4) + this.Width / 2;
-                int y2 = Convert.ToInt32(((pointsp[vertInd[i, 1],1] + offy) * (tempfov / (pointsp[vertInd[i, 1],2] + offz))) * size / 4) + this.Height / 2;
-                e.Graphics.DrawLine(wPen, x1, y1, x2, y2);
+                int x1 = Convert.ToInt32(((vertsP[tris[i][0] - 1][0] + offx) * (tempfov / (vertsP[tris[i][0] - 1][2] + offz))) * size / 4) + this.Width / 2;
+                int y1 = -Convert.ToInt32(((vertsP[tris[i][0] - 1][1] + offy) * (tempfov / (vertsP[tris[i][0] - 1][2] + offz))) * size / 4) + this.Height / 2;
+                int x2 = Convert.ToInt32(((vertsP[tris[i][1] - 1][0] + offx) * (tempfov / (vertsP[tris[i][1] - 1][2] + offz))) * size / 4) + this.Width / 2;
+                int y2 = -Convert.ToInt32(((vertsP[tris[i][1] - 1][1] + offy) * (tempfov / (vertsP[tris[i][1] - 1][2] + offz))) * size / 4) + this.Height / 2;
+                int x3 = Convert.ToInt32(((vertsP[tris[i][2] - 1][0] + offx) * (tempfov / (vertsP[tris[i][2] - 1][2] + offz))) * size / 4) + this.Width / 2;
+                int y3 = -Convert.ToInt32(((vertsP[tris[i][2] - 1][1] + offy) * (tempfov / (vertsP[tris[i][2] - 1][2] + offz))) * size / 4) + this.Height / 2;
+                DrawTriangle(wPen, x1, y1, x2, y2, x3, y3, e);
             }
 
             int Mod(int a, int n)
@@ -215,6 +269,13 @@ namespace RotationShiz
                 }
                 return result;
             }
+        }
+
+        private void DrawTriangle(Pen pen,float x1,float y1,float x2,float y2,float x3,float y3,PaintEventArgs e)
+        {
+            e.Graphics.DrawLine(pen, x1, y1, x2, y2);
+            e.Graphics.DrawLine(pen, x2, y2, x3, y3);
+            e.Graphics.DrawLine(pen, x3, y3, x1, y1);
         }
     }
 }
