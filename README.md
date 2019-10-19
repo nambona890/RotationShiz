@@ -20,3 +20,6 @@ Left,Right: Translate along the X axis
 
 
 P: Reset to default values
+
+
+Tab: Switch between meshes

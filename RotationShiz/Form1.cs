@@ -25,16 +25,30 @@ namespace RotationShiz
         double fov = Math.PI / 8;
         public double[][] vertices;
         public int[][] tris;
+
+        bool tabPress = false;
+
+        int meshIndex = 0;
         public Form1()
         {
             InitializeComponent();
+
+            ImportObj(Properties.Resources.muncher);
+
+            timer.Enabled = true;
+            timer.Interval = 20;  /* 100 millisec */
+            timer.Tick += new EventHandler(TimerCallback);
+        }
+
+        private void ImportObj(byte[] r)
+        {
             List<List<double>> impVer = new List<List<double>>();
             List<List<int>> impTris = new List<List<int>>();
 
 
-        byte[] rawData = Properties.Resources.mesh;
+            byte[] rawData = r;
             string strData = Encoding.UTF8.GetString(rawData, 0, rawData.Length);
-            
+
 
             string[] words = strData.Split('\n');
 
@@ -44,7 +58,7 @@ namespace RotationShiz
                 List<int> tmpInd = new List<int>();
 
                 string[] values = lines.Split(' ');
-                
+
                 switch (values[0])
                 {
                     case "v":
@@ -74,11 +88,8 @@ namespace RotationShiz
             }
             vertices = impVer.Select(list => list.ToArray()).ToArray();
             tris = impTris.Select(list => list.ToArray()).ToArray();
-
-            timer.Enabled = true;
-            timer.Interval = 20;  /* 100 millisec */
-            timer.Tick += new EventHandler(TimerCallback);
         }
+
         private void TimerCallback(object sender, EventArgs e)
         {
             if (Form.ActiveForm == this)
@@ -157,6 +168,34 @@ namespace RotationShiz
                     offz = 4;
 
                     fov = Math.PI / 8;
+                }
+
+                if(Keyboard.IsKeyDown(Key.Tab)&&!tabPress)
+                {
+                    rotx = 0;
+                    roty = 0;
+                    rotz = 0;
+
+                    offx = 0;
+                    offy = 0;
+                    offz = 4;
+
+                    fov = Math.PI / 8;
+                    meshIndex = Mod(meshIndex + 1, 2);
+                    switch(meshIndex)
+                    {
+                        case 0:
+                            ImportObj(Properties.Resources.muncher);
+                            break;
+                        case 1:
+                            ImportObj(Properties.Resources.isabelle);
+                            break;
+                    }
+                    tabPress = true;
+                }
+                else if(!Keyboard.IsKeyDown(Key.Tab)&&tabPress)
+                {
+                    tabPress = false;
                 }
 
             }
@@ -278,11 +317,11 @@ namespace RotationShiz
 
                     List<double> tTri = new List<double>();
                     double tempfov = 1 / Math.Tan(fov);
-                    tTri.Add(((vertsP[tris[i][0] - 1][0] + offx) * (tempfov / (vertsP[tris[i][0] - 1][2] + offz))) * size / 4 + this.Width / 2);
+                    tTri.Add(-(((vertsP[tris[i][0] - 1][0] + offx) * (tempfov / (vertsP[tris[i][0] - 1][2] + offz))) * size / 4) + this.Width / 2);
                     tTri.Add(-(((vertsP[tris[i][0] - 1][1] + offy) * (tempfov / (vertsP[tris[i][0] - 1][2] + offz))) * size / 4) + this.Width / 2);
-                    tTri.Add(((vertsP[tris[i][1] - 1][0] + offx) * (tempfov / (vertsP[tris[i][1] - 1][2] + offz))) * size / 4 + this.Width / 2);
+                    tTri.Add(-(((vertsP[tris[i][1] - 1][0] + offx) * (tempfov / (vertsP[tris[i][1] - 1][2] + offz))) * size / 4) + this.Width / 2);
                     tTri.Add(-(((vertsP[tris[i][1] - 1][1] + offy) * (tempfov / (vertsP[tris[i][1] - 1][2] + offz))) * size / 4) + this.Width / 2);
-                    tTri.Add(((vertsP[tris[i][2] - 1][0] + offx) * (tempfov / (vertsP[tris[i][2] - 1][2] + offz))) * size / 4 + this.Width / 2);
+                    tTri.Add(-(((vertsP[tris[i][2] - 1][0] + offx) * (tempfov / (vertsP[tris[i][2] - 1][2] + offz))) * size / 4) + this.Width / 2);
                     tTri.Add(-(((vertsP[tris[i][2] - 1][1] + offy) * (tempfov / (vertsP[tris[i][2] - 1][2] + offz))) * size / 4) + this.Width / 2);
                     tTri.Add((vertsP[tris[i][0] - 1][2] + vertsP[tris[i][1] - 1][2] + vertsP[tris[i][2] - 1][2])/3);
                     tTri.Add(dp);

@@ -63,9 +63,19 @@ namespace RotationShiz.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] mesh {
+        internal static byte[] isabelle {
             get {
-                object obj = ResourceManager.GetObject("mesh", resourceCulture);
+                object obj = ResourceManager.GetObject("isabelle", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] muncher {
+            get {
+                object obj = ResourceManager.GetObject("muncher", resourceCulture);
                 return ((byte[])(obj));
             }
         }
