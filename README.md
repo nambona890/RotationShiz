@@ -1,5 +1,5 @@
 # RotationShiz
-A 3D wireframe demo in C#
+A 3D demo in C#
 
 ## Controls
 Q,E: Rotate around the Z axis
