@@ -242,13 +242,6 @@ namespace RotationShiz
             e.Graphics.FillRectangle(bBrush, 0, 0, this.Width, this.Height);
             int size = Math.Min(this.Width, this.Height);
             Font font = new Font(FontFamily.GenericMonospace, size / 40);
-            e.Graphics.DrawString("FOV: " + Convert.ToInt32(fov * 180) +
-                                    "\nRotX: " + Mod(Convert.ToInt32(rotx * 180), 360) +
-                                    "\nRotY: " + Mod(Convert.ToInt32(roty * 180), 360) +
-                                    "\nRotZ: " + Mod(Convert.ToInt32(rotz * 180), 360) +
-                                    "\nX: " + offx.ToString("f2") +
-                                    "\nY: " + offy.ToString("f2") +
-                                    "\nZ: " + offz.ToString("f2"), font, wBrush, 0, 0);
             triDraw = new List<List<Double>>();
             for (int i = 0; i < tris.GetLength(0); i++)
             {
@@ -322,8 +315,15 @@ namespace RotationShiz
                     int color = ExtMath.Clamp(Convert.ToInt32(triDrawAr[i, 7] * 256), 0, 255);
                     Pen cPen = new Pen(Color.FromArgb(color, color, color));
                     FillTriangle(cPen, x1, y1, x2, y2, x3, y3, e);
-                }
             }
+            e.Graphics.DrawString("FOV: " + Convert.ToInt32(fov * 180) +
+                                    "\nRotX: " + Mod(Convert.ToInt32(rotx * (180 / Math.PI)), 360) +
+                                    "\nRotY: " + Mod(Convert.ToInt32(roty * (180 / Math.PI)), 360) +
+                                    "\nRotZ: " + Mod(Convert.ToInt32(rotz * (180 / Math.PI)), 360) +
+                                    "\nX: " + offx.ToString("f2") +
+                                    "\nY: " + offy.ToString("f2") +
+                                    "\nZ: " + offz.ToString("f2"), font, wBrush, 0, 0);
+        }
 
             int Mod(int a, int n)
             {
