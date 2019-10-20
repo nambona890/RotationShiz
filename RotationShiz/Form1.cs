@@ -181,7 +181,7 @@ namespace RotationShiz
                     offz = 4;
 
                     fov = Math.PI / 8;
-                    meshIndex = Mod(meshIndex + 1, 2);
+                    meshIndex = Mod(meshIndex + 1, 4);
                     switch(meshIndex)
                     {
                         case 0:
@@ -189,6 +189,12 @@ namespace RotationShiz
                             break;
                         case 1:
                             ImportObj(Properties.Resources.isabelle);
+                            break;
+                        case 2:
+                            ImportObj(Properties.Resources.hagrid);
+                            break;
+                        case 3:
+                            ImportObj(Properties.Resources.carl);
                             break;
                     }
                     tabPress = true;

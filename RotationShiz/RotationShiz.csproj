@@ -76,6 +76,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Resources\carl.obj" />
+    <None Include="Resources\hagrid.obj" />
     <None Include="Resources\isabelle.obj" />
     <None Include="Resources\muncher.obj" />
   </ItemGroup>
