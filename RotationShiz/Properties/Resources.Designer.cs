@@ -99,5 +99,25 @@ namespace RotationShiz.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap obama {
+            get {
+                object obj = ResourceManager.GetObject("obama", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] prism {
+            get {
+                object obj = ResourceManager.GetObject("prism", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

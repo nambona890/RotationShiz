@@ -80,6 +80,10 @@
     <None Include="Resources\hagrid.obj" />
     <None Include="Resources\isabelle.obj" />
     <None Include="Resources\muncher.obj" />
+    <None Include="Resources\obama.obj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\obama.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

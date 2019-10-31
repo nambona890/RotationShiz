@@ -25,6 +25,10 @@ namespace RotationShiz
         double fov = Math.PI / 8;
         public double[][] vertices;
         public int[][] tris;
+        public int[][] uvtris;
+        public double[][] uv;
+        public bool textured = false;
+        public Bitmap tex;
 
         bool tabPress = false;
 
@@ -42,6 +46,8 @@ namespace RotationShiz
 
         private void ImportObj(byte[] r)
         {
+            textured = false;
+            
             List<List<double>> impVer = new List<List<double>>();
             List<List<int>> impTris = new List<List<int>>();
 
@@ -88,6 +94,87 @@ namespace RotationShiz
             }
             vertices = impVer.Select(list => list.ToArray()).ToArray();
             tris = impTris.Select(list => list.ToArray()).ToArray();
+        }
+
+        private void ImportTexObj(byte[] r,Bitmap tx)
+        {
+            textured = true;
+            tex = tx;
+
+            List<List<double>> impVer = new List<List<double>>();
+            List<List<int>> impTris = new List<List<int>>();
+
+            List<List<double>> impUV = new List<List<double>>();
+            List<List<int>> impUVTris = new List<List<int>>();
+
+
+            byte[] rawData = r;
+            string strData = Encoding.UTF8.GetString(rawData, 0, rawData.Length);
+
+
+            string[] words = strData.Split('\n');
+
+            foreach (string lines in words)
+            {
+                List<double> tmpVer = new List<double>();
+                List<int> tmpInd = new List<int>();
+
+                List<double> tmpUV = new List<double>();
+                List<int> tmpUVInd = new List<int>();
+
+                string[] values = lines.Split(new Char[] { ' ', '/' });
+
+                switch (values[0])
+                {
+                    case "v":
+                        double tmpDb1;
+                        Double.TryParse(values[1], out tmpDb1);
+                        tmpVer.Add(tmpDb1);
+                        Double.TryParse(values[2], out tmpDb1);
+                        tmpVer.Add(tmpDb1);
+                        Double.TryParse(values[3], out tmpDb1);
+                        tmpVer.Add(tmpDb1);
+
+                        impVer.Add(tmpVer);
+
+                        break;
+                    case "vt":
+                        double tmpDb2;
+                        Double.TryParse(values[1], out tmpDb2);
+                        tmpUV.Add(tmpDb2);
+                        Double.TryParse(values[2], out tmpDb2);
+                        tmpUV.Add(tmpDb2);
+
+                        impUV.Add(tmpUV);
+
+                        break;
+                    case "f":
+                        int tmpDb3,tmpDb4;
+                        Int32.TryParse(values[1], out tmpDb3);
+                        tmpInd.Add(tmpDb3);
+                        Int32.TryParse(values[3], out tmpDb3);
+                        tmpInd.Add(tmpDb3);
+                        Int32.TryParse(values[5], out tmpDb3);
+                        tmpInd.Add(tmpDb3);
+
+                        impTris.Add(tmpInd);
+
+                        Int32.TryParse(values[2], out tmpDb4);
+                        tmpUVInd.Add(tmpDb4);
+                        Int32.TryParse(values[4], out tmpDb4);
+                        tmpUVInd.Add(tmpDb4);
+                        Int32.TryParse(values[6], out tmpDb4);
+                        tmpUVInd.Add(tmpDb4);
+
+                        impUVTris.Add(tmpUVInd);
+                        break;
+                }
+            }
+            vertices = impVer.Select(list => list.ToArray()).ToArray();
+            tris = impTris.Select(list => list.ToArray()).ToArray();
+
+            uv = impUV.Select(list => list.ToArray()).ToArray();
+            uvtris = impUVTris.Select(list => list.ToArray()).ToArray();
         }
 
         private void TimerCallback(object sender, EventArgs e)
@@ -181,7 +268,7 @@ namespace RotationShiz
                     offz = 4;
 
                     fov = Math.PI / 8;
-                    meshIndex = Mod(meshIndex + 1, 4);
+                    meshIndex = Mod(meshIndex + 1, 5);
                     switch(meshIndex)
                     {
                         case 0:
@@ -195,6 +282,9 @@ namespace RotationShiz
                             break;
                         case 3:
                             ImportObj(Properties.Resources.carl);
+                            break;
+                        case 4:
+                            ImportTexObj(Properties.Resources.prism,Properties.Resources.obama);
                             break;
                     }
                     tabPress = true;
@@ -244,6 +334,7 @@ namespace RotationShiz
 
         //};
         public List<List<Double>> triDraw;
+        public List<List<Double>> uvDraw;
 
 
         private void Form1_Paint(object sender, PaintEventArgs e)
@@ -287,6 +378,7 @@ namespace RotationShiz
             e.Graphics.FillRectangle(bBrush, 0, 0, this.Width, this.Height);
             int size = Math.Min(this.Width, this.Height);
             triDraw = new List<List<Double>>();
+            uvDraw = new List<List<Double>>();
             for (int i = 0; i < tris.GetLength(0); i++)
             {
                 double ux = (vertsP[tris[i][1] - 1][0] + offx) - (vertsP[tris[i][0] - 1][0] + offx);
@@ -321,6 +413,7 @@ namespace RotationShiz
                     double dp = (nx * lightx) + (ny * lighty) + (nz * lightz);
 
                     List<double> tTri = new List<double>();
+                    List<double> tUV = new List<double>();
                     double tempfov = 1 / Math.Tan(fov);
                     tTri.Add(-(((vertsP[tris[i][0] - 1][0] + offx) * (tempfov / (vertsP[tris[i][0] - 1][2] + offz))) * size / 4) + this.Width / 2);
                     tTri.Add(-(((vertsP[tris[i][0] - 1][1] + offy) * (tempfov / (vertsP[tris[i][0] - 1][2] + offz))) * size / 4) + this.Width / 2);
@@ -332,17 +425,35 @@ namespace RotationShiz
                     tTri.Add(dp);
 
                     triDraw.Add(tTri);
+                    if (textured)
+                    {
+                        tUV.Add(uv[uvtris[i][0] - 1][0]);
+                        tUV.Add(uv[uvtris[i][0] - 1][1]);
+                        tUV.Add(uv[uvtris[i][1] - 1][0]);
+                        tUV.Add(uv[uvtris[i][1] - 1][1]);
+                        tUV.Add(uv[uvtris[i][2] - 1][0]);
+                        tUV.Add(uv[uvtris[i][2] - 1][1]);
+                    }
+
+                    uvDraw.Add(tUV);
 
 
                 }
 
             }
-            double[,] triDrawAr = new double[triDraw.Count,8];
-            for(int i=0;i<triDrawAr.GetLength(0);i++)
+            double[,] triDrawAr = new double[triDraw.Count,14];
+            for (int i = 0; i < triDrawAr.GetLength(0); i++)
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    triDrawAr[i,j] = triDraw[i].ToArray()[j];
+                    triDrawAr[i, j] = triDraw[i].ToArray()[j];
+                }
+                if (textured)
+                {
+                    for (int j = 0; j < 6; j++)
+                    {
+                        triDrawAr[i, j + 8] = uvDraw[i].ToArray()[j];
+                    }
                 }
             }
             triDrawAr = triDrawAr.OrderByDescending(x => x[6]);
@@ -355,10 +466,34 @@ namespace RotationShiz
                     int y2 = Convert.ToInt32(triDrawAr[i, 3]);
                     int x3 = Convert.ToInt32(triDrawAr[i, 4]);
                     int y3 = Convert.ToInt32(triDrawAr[i, 5]);
-                    //DrawTriangle(wPen, x1, y1, x2, y2, x3, y3, e);
-                    int color = ExtMath.Clamp(Convert.ToInt32(triDrawAr[i, 7] * 256), 0, 255);
+                    float u1 = 0;
+                    float v1 = 0;
+                    float u2 = 0;
+                    float v2 = 0;
+                    float u3 = 0;
+                    float v3 = 0;
+                if (textured)
+                    {
+                        u1 = Convert.ToSingle(triDrawAr[i, 8]);
+                        v1 = Convert.ToSingle(triDrawAr[i, 9]);
+                        u2 = Convert.ToSingle(triDrawAr[i, 10]);
+                        v2 = Convert.ToSingle(triDrawAr[i, 11]);
+                        u3 = Convert.ToSingle(triDrawAr[i, 12]);
+                        v3 = Convert.ToSingle(triDrawAr[i, 13]);
+                    }
+
+                //DrawTriangle(wPen, x1, y1, x2, y2, x3, y3, e);
+                    int color = ExtMath.Clamp(Convert.ToInt32(triDrawAr[i, 7] * 256), 10, 255);
                     Pen cPen = new Pen(Color.FromArgb(color, color, color));
-                    FillTriangle(cPen, x1, y1, x2, y2, x3, y3, e);
+                    if (textured)
+                    {
+                        FillTexTriangle(cPen, x1, y1, x2, y2, x3, y3, u1, v1, u2, v2, u3, v3, e);
+                    }
+                    else
+                    {
+                        FillTriangle(cPen, x1, y1, x2, y2, x3, y3, e);
+                    }
+
             }
             Font font = new Font(FontFamily.GenericMonospace, size / 50);
             e.Graphics.DrawString("FOV: " + Convert.ToInt32(fov * 180) +
@@ -391,32 +526,6 @@ namespace RotationShiz
 
         private void FillTriangle(Pen pen, float x1, float y1, float x2, float y2, float x3, float y3, PaintEventArgs e)
         {
-
-            //int maxX = Convert.ToInt32(Math.Max(x1, Math.Max(x2, x3)));
-            //int minX = Convert.ToInt32(Math.Min(x1, Math.Min(x2, x3)));
-            //int maxY = Convert.ToInt32(Math.Max(y1, Math.Max(y2, y3)));
-            //int minY = Convert.ToInt32(Math.Min(y1, Math.Min(y2, y3)));
-
-            //System.Windows.Vector vs1 = new System.Windows.Vector(x2 - x1, y2 - y1);
-            //System.Windows.Vector vs2 = new System.Windows.Vector(x3 - x1, y3 - y1);
-
-            //for(int x=minX;x<=maxX;x++)
-            //{
-            //    for(int y=minY;y<=maxY;y++)
-            //    {
-            //        System.Windows.Vector q = new System.Windows.Vector(x - x1, y - y1);
-
-            //        float s = Convert.ToSingle(System.Windows.Vector.CrossProduct(q, vs2) / System.Windows.Vector.CrossProduct(vs1, vs2));
-            //        float t = Convert.ToSingle(System.Windows.Vector.CrossProduct(vs1, q) / System.Windows.Vector.CrossProduct(vs1, vs2));
-
-            //        if((s>=0)&&(t>=0)&&(s+t<=1))
-            //        {
-            //            e.Graphics.FillRectangle(brush, x, y, 1, 1);
-            //        }
-            //    }
-            //}
-
-
             float[,] tri = new float[,]
             {
                 { x1,y1 },
@@ -426,7 +535,7 @@ namespace RotationShiz
 
             tri = tri.OrderBy(x => x[1]);
 
-            if (tri[1,1] == tri[2,1])
+            if (tri[1, 1] == tri[2, 1])
             {
                 FillBottomTriangle(pen, tri[0, 0], tri[0, 1], tri[1, 0], tri[1, 1], tri[2, 0], tri[2, 1], e);
             }
@@ -450,7 +559,7 @@ namespace RotationShiz
 
             float curx1 = x1;
             float curx2 = x1;
-            for(int scanline = Convert.ToInt32(y1);scanline <= y2; scanline++)
+            for (int scanline = Convert.ToInt32(y1); scanline <= y2; scanline++)
             {
                 e.Graphics.DrawLine(pen, curx1, scanline, curx2, scanline);
                 curx1 += slope1;
@@ -470,6 +579,124 @@ namespace RotationShiz
                 e.Graphics.DrawLine(pen, curx1, scanline, curx2, scanline);
                 curx1 -= slope1;
                 curx2 -= slope2;
+            }
+        }
+
+        private void FillTexTriangle(Pen pen, float x1, float y1, float x2, float y2, float x3, float y3, float u1, float v1, float u2, float v2, float u3, float v3, PaintEventArgs e)
+        {
+            float[,] tri = new float[,]
+            {
+                { x1,y1,u1,v1 },
+                { x2,y2,u2,v2 },
+                { x3,y3,u3,v3 }
+            };
+
+            tri = tri.OrderBy(x => x[1]);
+
+            if (tri[1, 1] == tri[2, 1])
+            {
+                FillBottomTexTriangle(pen, tri[0, 0], tri[0, 1], tri[1, 0], tri[1, 1], tri[2, 0], tri[2, 1], tri[0, 2], tri[0, 3], tri[1, 2], tri[1, 3], tri[2, 2], tri[2, 3], e);
+            }
+            else if (tri[0, 1] == tri[1, 1])
+            {
+                FillTopTexTriangle(pen, tri[0, 0], tri[0, 1], tri[1, 0], tri[1, 1], tri[2, 0], tri[2, 1], tri[0, 2], tri[0, 3], tri[1, 2], tri[1, 3], tri[2, 2], tri[2, 3], e);
+            }
+            else
+            {
+                float midperc = (tri[1, 1] - tri[0, 1]) / (tri[2, 1] - tri[0, 1]);
+                float nx = (tri[0, 0] + midperc * (tri[2, 0] - tri[0, 0]));
+                float ny = tri[1, 1];
+                float nu = (tri[0, 2] + midperc * (tri[2, 2] - tri[0, 2]));
+                float nv = tri[1, 3];
+                FillBottomTexTriangle(pen, tri[0, 0], tri[0, 1], tri[1, 0], tri[1, 1], nx, ny, tri[0, 2], tri[0, 3], tri[1, 2], tri[1, 3], nu, nv, e);
+                FillTopTexTriangle(pen, tri[1, 0], tri[1, 1], nx, ny, tri[2, 0], tri[2, 1], tri[0, 2], tri[0, 3], nu, nv, tri[2, 2], tri[2, 3], e);
+            }
+        }
+
+        private void FillBottomTexTriangle(Pen pen, float x1, float y1, float x2, float y2, float x3, float y3, float u1, float v1, float u2, float v2, float u3, float v3, PaintEventArgs e)
+        {
+            float slope1 = (x2 - x1) / (y2 - y1);
+            float slope2 = (x3 - x1) / (y3 - y1);
+            //float uslope1 = (u2 - u1) / (v2 - v1);
+            //float uslope2 = (u3 - u1) / (v3 - v1);
+            float width = tex.Width;
+            float height = tex.Height;
+            float curx1 = x1;
+            float curx2 = x1;
+            //float curu1 = u1;
+            //float curu2 = u1;
+            //float curv1 = v1;
+            //float curv2 = v1;
+
+
+
+            for (int scanline = Convert.ToInt32(y1); scanline <= y2; scanline++)
+            {
+                float xperc = (scanline - y1) / (y3 - y1);
+                float yperc1 = (curx1 - x1) / (x3 - x1);
+                float yperc2 = (curx2 - x1) / (x3 - x1);
+                float curu1 = u1 + xperc * (u3 - u1);
+                float curu2 = u1 + xperc * (u2 - u1);
+                float curv1 = v1 + yperc1 * (v3 - v1);
+                float curv2 = v1 + yperc2 * (v2 - v1);
+                float vslope = (curu1 - curu2) / (curv1 - curv2);
+                float uslope = (curv1 - curv2) / (curu1 - curv2);
+                float curu = curu1;
+                float curv = curv1;
+                for (int x4 = Convert.ToInt32(curx1); x4 < curx2; x4++)
+                {
+                    int px = Convert.ToInt32(ExtMath.Clamp(curu * width, 0, width - 1));
+                    int py = Convert.ToInt32(ExtMath.Clamp(curv * height, 0, height - 1));
+                    Brush brush = new SolidBrush(tex.GetPixel(px, py));
+                    e.Graphics.FillRectangle(brush, x4, scanline, 1, 1);
+                    curu += uslope;
+                    curv += vslope;
+                }
+                curx1 += slope1;
+                curx2 += slope2;
+            }
+        }
+
+        private void FillTopTexTriangle(Pen pen, float x1, float y1, float x2, float y2, float x3, float y3, float u1, float v1, float u2, float v2, float u3, float v3, PaintEventArgs e)
+        {
+            float slope1 = (x3 - x1) / (y3 - y1);
+            float slope2 = (x3 - x2) / (y3 - y2);
+
+            float width = tex.Width;
+            float height = tex.Height;
+            float curx1 = x1;
+            float curx2 = x1;
+            //float curu1 = u1;
+            //float curu2 = u1;
+            //float curv1 = v1;
+            //float curv2 = v1;
+
+
+
+            for (int scanline = Convert.ToInt32(y1); scanline <= y2; scanline++)
+            {
+                float xperc = (scanline - y1) / (y3 - y1);
+                float yperc1 = (curx1 - x1) / (x3 - x1);
+                float yperc2 = (curx2 - x1) / (x3 - x1);
+                float curu1 = u1 + xperc * (u3 - u1);
+                float curu2 = u1 + xperc * (u2 - u1);
+                float curv1 = v1 + yperc1 * (v3 - v1);
+                float curv2 = v1 + yperc2 * (v2 - v1);
+                float vslope = (curu1 - curu2) / (curv1 - curv2);
+                float uslope = (curv1 - curv2) / (curu1 - curv2);
+                float curu = curu1;
+                float curv = curv1;
+                for (int x4 = Convert.ToInt32(curx1); x4 < curx2; x4++)
+                {
+                    int px = Convert.ToInt32(ExtMath.Clamp(curu * width, 0, width - 1));
+                    int py = Convert.ToInt32(ExtMath.Clamp(curv * height, 0, height - 1));
+                    Brush brush = new SolidBrush(tex.GetPixel(px, py));
+                    e.Graphics.FillRectangle(brush, x4, scanline, 1, 1);
+                    curu += uslope;
+                    curv += vslope;
+                }
+                curx1 += slope1;
+                curx2 += slope2;
             }
         }
 
