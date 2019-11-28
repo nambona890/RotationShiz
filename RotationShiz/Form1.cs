@@ -457,42 +457,45 @@ namespace RotationShiz
                 }
             }
             triDrawAr = triDrawAr.OrderByDescending(x => x[6]);
-                for (int i = 0; i < triDrawAr.GetLength(0); i++)
-                {
-                    double tempfov = 1 / Math.Tan(fov);
-                    int x1 = Convert.ToInt32(triDrawAr[i, 0]);
-                    int y1 = Convert.ToInt32(triDrawAr[i, 1]);
-                    int x2 = Convert.ToInt32(triDrawAr[i, 2]);
-                    int y2 = Convert.ToInt32(triDrawAr[i, 3]);
-                    int x3 = Convert.ToInt32(triDrawAr[i, 4]);
-                    int y3 = Convert.ToInt32(triDrawAr[i, 5]);
-                    float u1 = 0;
-                    float v1 = 0;
-                    float u2 = 0;
-                    float v2 = 0;
-                    float u3 = 0;
-                    float v3 = 0;
+            for (int i = 0; i < triDrawAr.GetLength(0); i++)
+            {
+                double tempfov = 1 / Math.Tan(fov);
+                int x1 = Convert.ToInt32(triDrawAr[i, 0]);
+                int y1 = Convert.ToInt32(triDrawAr[i, 1]);
+                int x2 = Convert.ToInt32(triDrawAr[i, 2]);
+                int y2 = Convert.ToInt32(triDrawAr[i, 3]);
+                int x3 = Convert.ToInt32(triDrawAr[i, 4]);
+                int y3 = Convert.ToInt32(triDrawAr[i, 5]);
+                float u1 = 0;
+                float v1 = 0;
+                float u2 = 0;
+                float v2 = 0;
+                float u3 = 0;
+                float v3 = 0;
                 if (textured)
-                    {
-                        u1 = Convert.ToSingle(triDrawAr[i, 8]);
-                        v1 = Convert.ToSingle(triDrawAr[i, 9]);
-                        u2 = Convert.ToSingle(triDrawAr[i, 10]);
-                        v2 = Convert.ToSingle(triDrawAr[i, 11]);
-                        u3 = Convert.ToSingle(triDrawAr[i, 12]);
-                        v3 = Convert.ToSingle(triDrawAr[i, 13]);
-                    }
+                {
+                    u1 = Convert.ToSingle(triDrawAr[i, 8]);
+                    v1 = Convert.ToSingle(triDrawAr[i, 9]);
+                    u2 = Convert.ToSingle(triDrawAr[i, 10]);
+                    v2 = Convert.ToSingle(triDrawAr[i, 11]);
+                    u3 = Convert.ToSingle(triDrawAr[i, 12]);
+                    v3 = Convert.ToSingle(triDrawAr[i, 13]);
+                }
 
                 //DrawTriangle(wPen, x1, y1, x2, y2, x3, y3, e);
+                if (textured)
+                {
+                    int color = ExtMath.Clamp(Convert.ToInt32(triDrawAr[i, 7] * 256), 10, 255);
+                    Pen cPen = new Pen(Color.FromArgb(color, 0, color));
+                    FillTriangle(cPen, x1, y1, x2, y2, x3, y3, e);
+                    FillTexTriangle(cPen, x1, y1, x2, y2, x3, y3, u1, v1, u2, v2, u3, v3, e);
+                }
+                else
+                {
                     int color = ExtMath.Clamp(Convert.ToInt32(triDrawAr[i, 7] * 256), 10, 255);
                     Pen cPen = new Pen(Color.FromArgb(color, color, color));
-                    if (textured)
-                    {
-                        FillTexTriangle(cPen, x1, y1, x2, y2, x3, y3, u1, v1, u2, v2, u3, v3, e);
-                    }
-                    else
-                    {
-                        FillTriangle(cPen, x1, y1, x2, y2, x3, y3, e);
-                    }
+                    FillTriangle(cPen, x1, y1, x2, y2, x3, y3, e);
+                }
 
             }
             Font font = new Font(FontFamily.GenericMonospace, size / 50);
@@ -623,35 +626,36 @@ namespace RotationShiz
             float height = tex.Height;
             float curx1 = x1;
             float curx2 = x1;
-            //float curu1 = u1;
-            //float curu2 = u1;
-            //float curv1 = v1;
-            //float curv2 = v1;
-
+            float curu1 = u1;
+            float curu2 = u1;
+            float curv1 = v1;
+            float curv2 = v1;
+            float uslope1 = (u2 - u1) / (y2 - y1);
+            float uslope2 = (u3 - u1) / (y3 - y1);
+            float vslope1 = (v2 - v1) / (y2 - y1);
+            float vslope2 = (v3 - v1) / (y3 - y1);
 
 
             for (int scanline = Convert.ToInt32(y1); scanline <= y2; scanline++)
             {
-                float xperc = (scanline - y1) / (y3 - y1);
-                float yperc1 = (curx1 - x1) / (x3 - x1);
-                float yperc2 = (curx2 - x1) / (x3 - x1);
-                float curu1 = u1 + xperc * (u3 - u1);
-                float curu2 = u1 + xperc * (u2 - u1);
-                float curv1 = v1 + yperc1 * (v3 - v1);
-                float curv2 = v1 + yperc2 * (v2 - v1);
-                float vslope = (curu1 - curu2) / (curv1 - curv2);
-                float uslope = (curv1 - curv2) / (curu1 - curv2);
-                float curu = curu1;
-                float curv = curv1;
+                float curu3 = curu1;
+                float curv3 = curv1;
+                float uslope3 = (curu2 - curu1) / (curx2 - curx1);
+                float vslope3 = (curv2 - curv1) / (curx2 - curx1);
                 for (int x4 = Convert.ToInt32(curx1); x4 < curx2; x4++)
                 {
-                    int px = Convert.ToInt32(ExtMath.Clamp(curu * width, 0, width - 1));
-                    int py = Convert.ToInt32(ExtMath.Clamp(curv * height, 0, height - 1));
+
+                    int px = Convert.ToInt32(ExtMath.Clamp(curu3 * width, 0, width - 1));
+                    int py = Convert.ToInt32(ExtMath.Clamp(curv3 * height, 0, height - 1));
                     Brush brush = new SolidBrush(tex.GetPixel(px, py));
                     e.Graphics.FillRectangle(brush, x4, scanline, 1, 1);
-                    curu += uslope;
-                    curv += vslope;
+                    curu3 += uslope3;
+                    curv3 += vslope3;
                 }
+                curu1 += uslope1;
+                curu2 += uslope2;
+                curv1 += vslope1;
+                curv2 += vslope2;
                 curx1 += slope1;
                 curx2 += slope2;
             }
@@ -665,36 +669,37 @@ namespace RotationShiz
             float width = tex.Width;
             float height = tex.Height;
             float curx1 = x1;
-            float curx2 = x1;
-            //float curu1 = u1;
-            //float curu2 = u1;
-            //float curv1 = v1;
-            //float curv2 = v1;
+            float curx2 = x2;
+            float curu1 = u1;
+            float curu2 = u2;
+            float curv1 = v1;
+            float curv2 = v2;
+            float uslope1 = (u3 - u1) / (y3 - y1);
+            float uslope2 = (u3 - u2) / (y3 - y2);
+            float vslope1 = (v3 - v1) / (y3 - y1);
+            float vslope2 = (v3 - v2) / (y3 - y2);
 
 
 
             for (int scanline = Convert.ToInt32(y1); scanline <= y2; scanline++)
             {
-                float xperc = (scanline - y1) / (y3 - y1);
-                float yperc1 = (curx1 - x1) / (x3 - x1);
-                float yperc2 = (curx2 - x1) / (x3 - x1);
-                float curu1 = u1 + xperc * (u3 - u1);
-                float curu2 = u1 + xperc * (u2 - u1);
-                float curv1 = v1 + yperc1 * (v3 - v1);
-                float curv2 = v1 + yperc2 * (v2 - v1);
-                float vslope = (curu1 - curu2) / (curv1 - curv2);
-                float uslope = (curv1 - curv2) / (curu1 - curv2);
-                float curu = curu1;
-                float curv = curv1;
+                float curu3 = curu1;
+                float curv3 = curv1;
+                float uslope3 = (curu2 - curu1) / (curx2 - curx1);
+                float vslope3 = (curv2 - curv1) / (curx2 - curx1);
                 for (int x4 = Convert.ToInt32(curx1); x4 < curx2; x4++)
                 {
-                    int px = Convert.ToInt32(ExtMath.Clamp(curu * width, 0, width - 1));
-                    int py = Convert.ToInt32(ExtMath.Clamp(curv * height, 0, height - 1));
+                    int px = Convert.ToInt32(ExtMath.Clamp(curu3 * width, 0, width - 1));
+                    int py = Convert.ToInt32(ExtMath.Clamp(curv3 * height, 0, height - 1));
                     Brush brush = new SolidBrush(tex.GetPixel(px, py));
                     e.Graphics.FillRectangle(brush, x4, scanline, 1, 1);
-                    curu += uslope;
-                    curv += vslope;
+                    curu3 += uslope3;
+                    curv3 += vslope3;
                 }
+                curu1 += uslope1;
+                curu2 += uslope2;
+                curv1 += vslope1;
+                curv2 += vslope2;
                 curx1 += slope1;
                 curx2 += slope2;
             }
